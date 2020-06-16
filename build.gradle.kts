@@ -1,16 +1,16 @@
-val testVar by extra("testVal")
-// import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
-    val rootTestVar by extra("rootTestVal")
     repositories {
         google()
         jcenter()
+        mavenCentral()
         maven(url = "https://jitpack.io")
-        maven(url = "https://oss.sonatype.org/content/repositories/snapshots")
     }
 
     dependencies {
+        classpath(kotlin("gradle-plugin", version = "1.3.72"))
+        classpath("com.android.tools.build:gradle:4.0.0")
     }
 }
 
@@ -22,7 +22,10 @@ allprojects {
     repositories {
         google()
         jcenter()
+        mavenCentral()
         maven(url = "https://jitpack.io")
+        maven(url = "https://maven.google.com")
+        maven(url = "https://plugins.gradle.org/m2/")
     }
 
     apply(plugin = "com.diffplug.gradle.spotless")
@@ -52,9 +55,14 @@ allprojects {
         }
     }
 
-    // tasks.withType<KotlinCompile> {
-    //     kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
-    // }
+    tasks {
+        withType<KotlinCompile> {
+            kotlinOptions {
+                freeCompilerArgs = listOf("-Xopt-in=kotlin.RequiresOptIn")
+                jvmTarget = JavaVersion.VERSION_1_8.toString()
+            }
+        }
+    }
 }
 
 subprojects {
