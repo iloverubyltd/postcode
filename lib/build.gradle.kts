@@ -2,6 +2,7 @@ plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization") version "1.3.72"
     `maven-publish`
+    id("org.jetbrains.dokka") version "0.10.1"
 }
 
 val kotlinx_coroutines_version = "1.3.7"
@@ -118,6 +119,11 @@ kotlin {
             }
         }
     }
+}
+
+tasks.dokka {
+    outputFormat = "html"
+    outputDirectory = "$buildDir/dokka"
 }
 
 dependencies {

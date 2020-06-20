@@ -12,6 +12,8 @@ private val SPACE_REGEX = Regex("""\s+""") // gi
 
 /**
  * Drop all spaces and uppercase
+ *
+ * @suppress
  */
 private val sanitize: (String) -> String = { s -> s.replace(SPACE_REGEX, "").toUpperCase() }
 private val matchOn: (String, Regex) -> MatchResult? = { s, regex ->
@@ -21,9 +23,16 @@ private val matchOn: (String, Regex) -> MatchResult? = { s, regex ->
 private val incodeRegex = Regex("""\d[a-z]{2}$""", IGNORE_CASE)
 
 /**
- * Returns a normalised postcode String (i.e. uppercased and properly spaced)
+ * Returns a normalised copy of a postcode String.
  *
- * Returns null if invalid postcode
+ * The postcode is normalised as follows:
+ *
+ * - alphabetical characters are converted to uppercase
+ * - separator spacing is normalised, with a single space inserted [incode] and [outcode]
+ * - extra whitespace is removed, including leading and trailing spaces
+ *
+ * @param[postcode] a raw (unparsed) postcode.
+ * @return a normalised postcode String if the postcode is valid, or null if the postcode is invalid.
  */
 val toNormalised: Parser = fun(postcode): String? {
     val outcode = toOutcode(postcode) ?: return null
@@ -32,19 +41,21 @@ val toNormalised: Parser = fun(postcode): String? {
 }
 
 /**
- * Returns a correctly formatted outcode given a postcode
+ * Returns a correctly formatted outcode for a given postcode.
  *
- * Returns null if invalid postcode
- */
+ * @param[postcode] a raw (unparsed) postcode.
+ * @return a correctly formatted outcode if the postcode is valid, or null if the postcode is invalid.
+ **/
 val toOutcode: Parser = fun(postcode): String? {
     if (!isValid(postcode)) return null
     return sanitize(postcode).replace(incodeRegex, "")
 }
 
 /**
- * Returns a correctly formatted incode given a postcode
+ * Returns a correctly formatted incode for a given postcode.
  *
- * Returns null if invalid postcode
+ * @param[postcode] a raw (unparsed) postcode.
+ * @return a correctly formatted incode if the postcode is valid, or null if the postcode is invalid.
  */
 val toIncode: Parser = fun(postcode): String? {
     if (!isValid(postcode)) return null
@@ -55,9 +66,10 @@ val toIncode: Parser = fun(postcode): String? {
 private val AREA_REGEX = Regex("""^[a-z]{1,2}""", IGNORE_CASE)
 
 /**
- * Returns a correctly formatted area given a postcode
+ * Returns a correctly formatted area for a given postcode.
  *
- * Returns null if invalid postcode
+ * @param[postcode] a raw (unparsed) postcode.
+ * @return a correctly formatted area if the postcode is valid, or null if the postcode is invalid.
  */
 val toArea: Parser = fun(postcode): String? {
     if (!isValid(postcode)) return null
@@ -66,9 +78,10 @@ val toArea: Parser = fun(postcode): String? {
 }
 
 /**
- * Returns a correctly formatted sector given a postcode
+ * Returns a correctly formatted sector for a given postcode.
  *
- * Returns null if invalid postcode
+ * @param[postcode] a raw (unparsed) postcode.
+ * @return a correctly formatted sector if the postcode is valid, or null if the postcode is invalid.
  */
 val toSector: Parser = fun(postcode): String? {
     val outcode = toOutcode(postcode) ?: return null
@@ -79,9 +92,10 @@ val toSector: Parser = fun(postcode): String? {
 private val UNIT_REGEX = Regex("""[a-z]{2}$""", IGNORE_CASE)
 
 /**
- * Returns a correctly formatted unit given a postcode
+ * Returns a correctly formatted unit for a given postcode.
  *
- * Returns null if invalid postcode
+ * @param[postcode] a raw (unparsed) postcode.
+ * @return a correctly formatted unit if the postcode is valid,, or null if the postcode is invalid.
  */
 val toUnit: Parser = fun(postcode): String? {
     if (!isValid(postcode)) return null
@@ -92,11 +106,12 @@ val toUnit: Parser = fun(postcode): String? {
 private val DISTRICT_SPLIT_REGEX = Regex("""^([a-z]{1,2}\d)([a-z])$""", IGNORE_CASE)
 
 /**
- * Returns a correctly formatted district given a postcode
+ * Returns a correctly formatted district for a given postcode.
  *
- * Returns null if invalid postcode
- *
- * @example
+ * @param[postcode] a raw (unparsed) postcode.
+ * @return a correctly formatted district if the postcode is valid, or null if the raw postcode is
+ * invalid.
+ * @sample
  *
  * ```
  * toDistrict("AA9 9AA") // => "AA9"
@@ -110,12 +125,12 @@ val toDistrict: Parser = fun(postcode): String? {
 }
 
 /**
- * Returns a correctly formatted subdistrict given a postcode
+ * Returns a correctly formatted subdistrict for a given postcode.
  *
- * Returns null if no subdistrict is available on valid postcode
- * Returns null if invalid postcode
- *
- * @example
+ * @param[postcode] a raw (unparsed) postcode.
+ * @return a correctly formatted subdistrict, or null if the postcode is valid but no subdistrict is
+ * available, or if the postcode is invalid.
+ * @sample
  *
  * ```
  * toSubDistrict("AA9A 9AA") // => "AA9A"
