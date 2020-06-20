@@ -8,7 +8,7 @@ typealias Validator = (String) -> Boolean
 //   (input: String): Boolean
 // }
 
-internal val validOutcodeRegex = Regex("""^[a-z]{1,2}\d[a-z\d]?$""", IGNORE_CASE)
+internal val validOutcodeRegex = Regex("""^[a-z]{1,2}\d[a-z\d]?""", IGNORE_CASE)
 private val VALIDATION_REGEX = Regex("""^[a-z]{1,2}\d[a-z\d]?\s*\d[a-z]{2}$""", IGNORE_CASE)
 
 /**

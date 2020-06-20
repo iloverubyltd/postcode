@@ -38,7 +38,7 @@ sealed class Postcode {
         fun toDistrict() = toDistrict
         fun toSubDistrict() = toSubDistrict
 
-        fun validOutcode(outcode: String): Boolean = outcode.matches(validOutcodeRegex)
+        fun validOutcode(outcode: String): Boolean = validOutcodeRegex.containsMatchIn(outcode)
 
         fun parse(raw: String): Postcode = when {
             isValid(raw) -> Valid(raw)
