@@ -14,6 +14,8 @@ package uk.co.iloveruby.postcode
  */
 sealed class Postcode {
 
+    open val raw: String = ""
+
     abstract val valid: Boolean
     abstract val postcode: String?
     abstract val incode: String?
@@ -38,16 +40,16 @@ sealed class Postcode {
 
         fun validOutcode(outcode: String): Boolean = outcode.matches(validOutcodeRegex)
 
-        fun parse(postcode: String): Postcode = when {
-            isValid(postcode) -> Valid(postcode)
+        fun parse(raw: String): Postcode = when {
+            isValid(raw) -> Valid(raw)
             else -> Invalid
         }
 
-        fun newInstance(postcode: String): Postcode = Base(postcode)
+        fun create(raw: String): Postcode = Base(raw)
     }
 
-    class Valid(postcode: String) : Postcode() {
-        private val instance: Base = Base(postcode)
+    class Valid(override val raw: String) : Postcode() {
+        private val instance: Base = Base(raw)
 
         override val valid: Boolean
             get() = instance.valid
@@ -110,64 +112,24 @@ sealed class Postcode {
         override fun normalise(): String? = null
     }
 
-    private class Base(override val postcode: String) : Postcode() {
-        private val _raw: String = postcode
-        private val _valid: Boolean = isValid(postcode)
+    private class Base(override val raw: String) : Postcode() {
 
-        // All parse methods should return null if invalid
-        private var _incode: String? = null
-        private var _outcode: String? = null
-        private var _area: String? = null
-        private var _unit: String? = null
-        private var _district: String? = null
-        private var _subDistrict: String? = null
-        private var _sector: String? = null
+        override val valid: Boolean by lazy { isValid(raw) }
+        override val incode: String? by nullUnlessValid { toIncode(raw) }
+        override val outcode: String? by nullUnlessValid { toOutcode(raw) }
+        override val area: String? by nullUnlessValid { toArea(raw) }
+        override val district: String? by nullUnlessValid { toDistrict(raw) }
+        override val subDistrict: String? by nullUnlessValid { toSubDistrict(raw) }
+        override val sector: String? by nullUnlessValid { toSector(raw) }
+        override val unit: String? by nullUnlessValid { toUnit(raw) }
 
-        override val valid: Boolean
-            get() = _valid
+        override val postcode: String?
+            get() = TODO("Not yet implemented")
 
-        override val incode: String?
-            get() {
-                if (_incode == null) _incode = toIncode(_raw)
-                return _incode
-            }
+        override fun normalise(): String? = if (valid) "$outcode $incode" else null
 
-        override val outcode: String?
-            get() {
-                if (_outcode == null) _outcode = toOutcode(_raw)
-                return _outcode
-            }
-
-        override val area: String?
-            get() {
-                if (_area == null) _area = toArea(_raw)
-                return _area
-            }
-
-        override val district: String?
-            get() {
-                if (_district == null) _district = toDistrict(_raw)
-                return _district
-            }
-
-        override val subDistrict: String?
-            get() {
-                if (_subDistrict == null) _subDistrict = toSubDistrict(_raw)
-                return _subDistrict
-            }
-
-        override val sector: String?
-            get() {
-                if (_sector == null) _sector = toSector(_raw)
-                return _sector
-            }
-
-        override val unit: String?
-            get() {
-                if (_unit == null) _unit = toUnit(_raw)
-                return _unit
-            }
-
-        override fun normalise(): String? = "$outcode $incode"
+        private fun <T> nullUnlessValid(initializer: () -> T): Lazy<T?> = lazy {
+            if (valid) initializer() else null
+        }
     }
 }
