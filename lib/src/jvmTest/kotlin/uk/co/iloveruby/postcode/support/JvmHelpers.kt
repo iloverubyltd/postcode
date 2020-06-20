@@ -1,10 +1,13 @@
-package uk.co.iloveruby.postcode
+package uk.co.iloveruby.postcode.support
 
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import kotlinx.serialization.ImplicitReflectionSerializer
+import uk.co.iloveruby.postcode.PostcodeUnitTest
 
+@ImplicitReflectionSerializer
 @Throws(IllegalStateException::class)
-actual fun loadFixtureFile(file: String): String {
+actual suspend fun loadFixtureFile(file: String): String {
     val inputStream = PostcodeUnitTest::class.java
         .getResourceAsStream("/data/$file")
     checkNotNull(inputStream, { "Specified fixture file ($file) does not exist." })

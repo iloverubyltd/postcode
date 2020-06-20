@@ -8,6 +8,7 @@ val kotlinx_coroutines_version = "1.3.7"
 val kotlinx_io_version = "0.1.16"
 val kotlinx_serialization_version = "0.20.0"
 val junit5_version = "5.6.0"
+val kotest_version = "4.0.7"
 
 kotlin {
     jvm {
@@ -71,9 +72,10 @@ kotlin {
 
         val commonTest by getting {
             dependencies {
-                implementation(kotlin("test-common"))
-                implementation(kotlin("test-annotations-common"))
-                // implementation(kotlinx("io:$kotlinx_io_version"))
+                implementation("io.kotest:kotest-core:$kotest_version")
+                implementation("io.kotest:kotest-assertions-core:$kotest_version")
+                // implementation("io.kotest:kotest-runner-console:$kotest_version")
+                implementation(kotlinx("coroutines-core-common:$kotlinx_coroutines_version"))
                 implementation(kotlinx("serialization-runtime-common:$kotlinx_serialization_version"))
             }
         }
@@ -86,11 +88,10 @@ kotlin {
 
         val jvmTest by getting {
             dependencies {
-                implementation(kotlin("test"))
-                implementation(kotlin("test-junit5"))
-                implementation("org.junit.jupiter:junit-jupiter-api:$junit5_version")
-                implementation("org.junit.jupiter:junit-jupiter-engine:$junit5_version")
-                // implementation(kotlinx("io-jvm:$kotlinx_io_version"))
+                implementation("io.kotest:kotest-runner-junit5:$kotest_version")
+                implementation("io.kotest:kotest-assertions-core-jvm:$kotest_version")
+                implementation("io.kotest:kotest-property-jvm:$kotest_version")
+                implementation(kotlinx("coroutines-core:$kotlinx_coroutines_version"))
                 implementation(kotlinx("serialization-runtime:$kotlinx_serialization_version"))
             }
 
@@ -109,7 +110,10 @@ kotlin {
 
         val jsTest by getting {
             dependencies {
-                implementation(kotlin("test-js"))
+                implementation(npm("printj", "1.2.2"))
+                implementation("io.kotest:kotest-assertions-core-js:$kotest_version")
+                implementation("io.kotest:kotest-property-js:$kotest_version")
+                implementation(kotlinx("coroutines-core-js:$kotlinx_coroutines_version"))
                 implementation(kotlinx("serialization-runtime-js:$kotlinx_serialization_version"))
             }
         }

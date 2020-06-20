@@ -1,156 +1,115 @@
 package uk.co.iloveruby.postcode
 
-import kotlin.js.JsName
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.data.forAll
+import io.kotest.data.row
+import io.kotest.inspectors.forAll
+import io.kotest.matchers.shouldBe
 import kotlinx.serialization.ImplicitReflectionSerializer
+import uk.co.iloveruby.postcode.support.fromFixtureFile
 
-@OptIn(ImplicitReflectionSerializer::class)
-class PostcodeUnitTest {
+@ImplicitReflectionSerializer
+class PostcodeUnitTest : FunSpec({
 
-    fun <T> testMethod(
-        tests: List<FixtureAssertion<T>>,
-        method: (Postcode) -> T // KProperty1 or KFunction1
-    ) {
-        tests.forEach { (base: String, expected: T) ->
-            val p = Postcode.newInstance(base)
-            val result = method.invoke(p)
-            assertEquals(result, expected)
-        }
-    }
-    fun create(raw: String) = Postcode.create(raw)
-
-    @Test
-    @JsName("postcodeValid")
-    fun `Postcode#valid - should return true for postcodes that look correct`() { // ASYNC
-        val (tests) = loadBooleanFixtures("validation.json")
-        tests.forEach { (base, expected) ->
-            val p = Postcode.newInstance(base)
-            assertEquals(p.valid, expected)
+    test("Postcode#valid should correctly validate postcode") {
+        fromFixtureFile<String, Boolean>("validation.json").forAll { (base: String, expected: Boolean) ->
+            Postcode.create(raw = base).valid shouldBe expected
         }
     }
 
-    @Test
-    @JsName("postcodeNormalisation1")
-    fun `postcode normalisation - should correctly normalise postcodes`() { // ASYNC
-        val (tests) = loadNullableStringFixtures("normalisation.json")
-        testMethod<String?>(method = Postcode::normalise, tests = tests)
-    }
-
-    @Test
-    @JsName("postcodeNormalisation2")
-    fun `postcode normalisation - should return null if invalid postcode`() {
-        assertNull(Postcode.create("Definitely bogus").normalise())
-    }
-
-    @Test
-    @JsName("postcodeValidOutcode1")
-    fun `Postcode#validOutcode - should return true for valid outcodes`() { // ASYNC
-        val (tests) = loadNullableStringFixtures("outcodes.json")
-        tests.forEach { (expected) ->
-            assertTrue(Postcode.validOutcode(expected))
+    test("Postcode#normalise should correctly normalise Postcodes") {
+        fromFixtureFile<String, String?>("normalisation.json").forAll { (base: String, expected: String?) ->
+            Postcode.create(raw = base).normalise() shouldBe expected
         }
     }
 
-    @Test
-    @JsName("postcodeValidOutcode2")
-    fun `Postcode#validOutcode - should return false for invalid outcode`() {
-        val invalidOutcodes = listOf("BOGUS", "Hello there", "12345")
-        invalidOutcodes.forEach { code ->
-            assertFalse(Postcode.validOutcode(code))
+    test("Postcode#normalise should return null if invalid postcode") {
+        Postcode.create("Definitely bogus").normalise() shouldBe null
+    }
+
+    test("Postcode.Companion#validOutcode should return true for valid outcodes") {
+        fromFixtureFile<String, String?>("outcodes.json").forAll { (base: String, unused: String?) ->
+            Postcode.validOutcode(base) shouldBe true
         }
     }
 
-    @Test
-    @JsName("incodeParsing1")
-    fun `incode parsing - should correctly parse incodes`() { // ASYNC
-        val (tests) = loadNullableStringFixtures("incodes.json")
-        testMethod<String?>(method = Postcode::incode, tests = tests)
+    test("Postcode.Companion#validOutcode should return false for invalid outcode") {
+        forAll(
+            row("BOGUS"),
+            row("Hello there"),
+            row("12345")
+        ) { code ->
+            Postcode.validOutcode(code) shouldBe false
+        }
     }
 
-    @Test
-    @JsName("incodeParsing2")
-    fun `incode parsing - should return null if invalid postcode`() {
-        assertNull(Postcode.create("Definitely bogus").incode)
+    test("Postcode#outcode should correctly parse outcode") {
+        fromFixtureFile<String, String?>("outcodes.json").forAll { (base: String, expected: String?) ->
+            Postcode.create(raw = base).outcode shouldBe expected
+        }
     }
 
-    @Test
-    @JsName("outcodeParsing1")
-    fun `outcode parsing - should correctly parse outcodes`() { // ASYNC
-        val (tests) = loadNullableStringFixtures("outcodes.json")
-        testMethod<String?>(method = Postcode::outcode, tests = tests)
+    test("Postcode#outcode should return null if invalid postcode") {
+        Postcode.create("Definitely bogus").outcode shouldBe null
     }
 
-    @Test
-    @JsName("outcodeParsing2")
-    fun `outcode parsing - should return null if invalid postcode`() {
-        assertNull(Postcode.create("Definitely bogus").outcode)
+    test("Postcode#incode should correctly parse incode") {
+        fromFixtureFile<String, String?>("incodes.json").forAll { (base: String, expected: String?) ->
+            Postcode.create(raw = base).incode shouldBe expected
+        }
     }
 
-    @Test
-    @JsName("areaParsing1")
-    fun `area parsing - should correctly parse areas`() { // ASYNC
-        val (tests) = loadNullableStringFixtures("areas.json")
-        testMethod<String?>(method = Postcode::area, tests = tests)
+    test("Postcode#incode should return null if invalid postcode") {
+        Postcode.create("Definitely bogus").incode shouldBe null
     }
 
-    @Test
-    @JsName("areaParsing2")
-    fun `area parsing - should return null if invalid postcode`() {
-        assertNull(Postcode.create("Definitely bogus").area)
+    test("Postcode#area should correctly parse areas") {
+        fromFixtureFile<String, String?>("areas.json").forAll { (base: String, expected: String?) ->
+            Postcode.create(raw = base).area shouldBe expected
+        }
     }
 
-    @Test
-    @JsName("districtParsing1")
-    fun `district parsing - should correctly parse districts`() { // ASYNC
-        val (tests) = loadNullableStringFixtures("districts.json")
-        testMethod<String?>(method = Postcode::district, tests = tests)
+    test("Postcode#area should return null if invalid postcode") {
+        Postcode.create("Definitely bogus").area shouldBe null
     }
 
-    @Test
-    @JsName("districtParsing2")
-    fun `district parsing - should return null if invalid postcode`() {
-        assertNull(Postcode.create("Definitely bogus").district)
+    test("Postcode#district should correctly parse districts") {
+        fromFixtureFile<String, String?>("districts.json").forAll { (base: String, expected: String?) ->
+            Postcode.create(raw = base).district shouldBe expected
+        }
     }
 
-    @Test
-    @JsName("subdistrictParsing1")
-    fun `subdistrict parsing - should correctly parse sub-districts`() { // ASYNC
-        val (tests) = loadNullableStringFixtures("sub-districts.json")
-        testMethod<String?>(method = Postcode::subDistrict, tests = tests)
+    test("Postcode#district should return null if invalid postcode") {
+        Postcode.create("Definitely bogus").district shouldBe null
     }
 
-    @Test
-    fun `subDistrict parsing - should return null if invalid postcode`() {
-        assertNull(Postcode.create("Definitely bogus").subDistrict)
+    test("Postcode#subDistrict should correctly parse sub-districts") {
+        fromFixtureFile<String, String?>("sub-districts.json").forAll { (base: String, expected: String?) ->
+            Postcode.create(raw = base).subDistrict shouldBe expected
+        }
     }
 
-    @Test
-    @JsName("sectorParsing1")
-    fun `sector parsing - should correctly parse sectors`() { // ASYNC
-        val (tests) = loadNullableStringFixtures("sectors.json")
-        testMethod<String?>(method = Postcode::sector, tests = tests)
+    test("Postcode#subDistrict should return null if invalid postcode") {
+        Postcode.create("Definitely bogus").subDistrict shouldBe null
     }
 
-    @Test
-    @JsName("sectorParsing2")
-    fun `sector parsing - should return null if invalid postcode`() {
-        assertNull(Postcode.create("Definitely bogus").sector)
+    test("Postcode#sector should correctly parse sectors") {
+        fromFixtureFile<String, String?>("sectors.json").forAll { (base: String, expected: String?) ->
+            Postcode.create(raw = base).sector shouldBe expected
+        }
     }
 
-    @Test
-    @JsName("unitParsing1")
-    fun `unit parsing - should correctly parse units`() { // ASYNC
-        val (tests) = loadNullableStringFixtures("units.json")
-        testMethod<String?>(method = Postcode::unit, tests = tests)
+    test("Postcode#sector should return null if invalid postcode") {
+        Postcode.create("Definitely bogus").sector shouldBe null
     }
 
-    @Test
-    @JsName("unitParsing2")
-    fun `unit parsing - should return null if invalid postcode`() {
-        assertNull(Postcode.create("Definitely bogus").unit)
+    test("Postcode#unit should correctly parse units") {
+        fromFixtureFile<String, String?>("units.json").forAll { (base: String, expected: String?) ->
+            Postcode.create(raw = base).unit shouldBe expected
+        }
     }
-}
+
+    test("Postcode#unit should return null if invalid postcode") {
+        Postcode.create("Definitely bogus").unit shouldBe null
+    }
+})
